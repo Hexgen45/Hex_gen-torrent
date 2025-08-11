@@ -2,6 +2,7 @@
   "name": "hex_gen-torrent",
   "version": "1.0.0",
   "description": "A bittorrent client for learning and educational purpouse",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Hexgen45/Hex_gen-torrent/issues"
   },
-  "homepage": "https://github.com/Hexgen45/Hex_gen-torrent#readme"
+  "homepage": "https://github.com/Hexgen45/Hex_gen-torrent#readme",
+  "dependencies": {
+    "bencode": "^4.0.0"
+  }
 }
