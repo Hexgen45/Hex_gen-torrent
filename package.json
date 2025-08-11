@@ -1,0 +1,19 @@
+{
+  "name": "hex_gen-torrent",
+  "version": "1.0.0",
+  "description": "A bittorrent client for learning and educational purpouse",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hexgen45/Hex_gen-torrent.git"
+  },
+  "author": "Hex_gen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hexgen45/Hex_gen-torrent/issues"
+  },
+  "homepage": "https://github.com/Hexgen45/Hex_gen-torrent#readme"
+}
