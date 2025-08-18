@@ -2,7 +2,7 @@
 
 import crypto from 'crypto'
 
-const id = null;
+let id = null;
 
 export function getId () {
     if (!id){
@@ -12,4 +12,4 @@ export function getId () {
     return id;
 };
 
-export default getId;
+// export default getId;

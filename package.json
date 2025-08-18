@@ -18,7 +18,6 @@
   },
   "homepage": "https://github.com/Hexgen45/Hex_gen-torrent#readme",
   "dependencies": {
-    "bencode": "^4.0.0",
-    "bigint-buffer": "^1.1.5"
+    "bencode": "^4.0.0"
   }
 }
