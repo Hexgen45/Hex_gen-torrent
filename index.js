@@ -3,13 +3,9 @@
 import fs from 'fs'
 import bencode from 'bencode'
 
-import { getPeers } from './tracker.js';
-import {open} from './torrent-Parser.js'
+import {open} from './src/torrent-Parser.js';
+import {Download} from './src/downloads.js';
 
-// const torrent = open('./Title_Pending [FitGirl Repack].torrent');
-const torrent = open('./electronics.torrent');
-// console.log(torrent)
+const torrent = open(process.argv[2]);
 
-getPeers(torrent, peers => {
-    console.log('list of peers', peers)
-})
+Download(torrent);
