@@ -1,23 +1,21 @@
 'use strict';
 import { getPeers } from './src/tracker.js';
+import {buildHandshake} from './message.js'
 import net from 'net'
 
 getPeers(torrent, peers => {
-    peers.foreach();
+    peers.foreach(peer => Download(peer, torrent));
 })
 
-function Download(peer){
+function Download(peer, torrent){
     const socket = net.Socket();
     socket.on('error', console.log);
     socket.connect(peer.port, peer.ip, ()=>{
-        //socket.write(....)
+        socket.write(buildHandshake(torrent));
     });
 
+    onWholeMsg(socket, msg => msgHandler(msg,socket));
     
-    
-    socket.on('data', data =>{
-        //handle response here
-    });
 }
 
 
@@ -36,4 +34,14 @@ function onWholeMsg(socket, callback) {
       handshake = false;
     }
   });
+}
+
+function msgHandler(msg, socket) {
+  if (isHandshake(msg)) socket.write(message.buildInterested());
+}
+
+
+function isHandshake(msg) {
+  return msg.length === msg.readUInt8(0) + 49 &&
+         msg.toString('utf8', 1) === 'BitTorrent protocol';
 }
