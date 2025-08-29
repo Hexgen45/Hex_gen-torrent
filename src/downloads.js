@@ -3,18 +3,20 @@ import { getPeers } from './src/tracker.js';
 import {buildHandshake, msg_parse} from './message.js'
 import net from 'net'
 
+const requested = [];
 getPeers(torrent, peers => {
-    peers.foreach(peer => Download(peer, torrent));
+    peers.foreach(peer => Download(peer, torrent, requested));
 })
 
-function Download(peer, torrent){
+function Download(peer, torrent, requested){
     const socket = net.Socket();
     socket.on('error', console.log);
     socket.connect(peer.port, peer.ip, ()=>{
         socket.write(buildHandshake(torrent));
     });
 
-    onWholeMsg(socket, msg => msgHandler(msg,socket));
+    const queue = [];
+    onWholeMsg(socket, msg => msgHandler(msg, socket, requested, queue));
     
 }
 
@@ -36,7 +38,7 @@ function onWholeMsg(socket, callback) {
   });
 }
 
-function msgHandler(msg, socket) {
+function msgHandler(msg, socket, requested, queue) {
   if (isHandshake(msg)){
         socket.write(message.buildInterested());
   } 
@@ -45,9 +47,9 @@ function msgHandler(msg, socket) {
 
     if (m.id === 0) chokeHandler();
     if (m.id === 1) unchokeHandler();
-    if (m.id === 4) haveHandler(m.payload);
+    if (m.id === 4) haveHandler(m.payload, socket, requested, queue);
     if (m.id === 5) bitfieldHandler(m.payload);
-    if (m.id === 7) pieceHandler(m.payload);
+    if (m.id === 7) pieceHandler(m.payload, socket, requested, queue);
   }
 }
 
@@ -65,14 +67,32 @@ function unchokeHandler() {
   //...
  }
 
-function haveHandler(payload) { 
+function haveHandler(payload, socket, requested, queue) { 
   //...
+  const pieceIndex = payload.readUInt32BE(0);
+  queue.push(pieceIndex);
+  if (queue.length === 1) {
+    requestPiece(socket, requested, queue);
+  }
  }
 
 function bitfieldHandler(payload) { 
   //...
  }
 
-function pieceHandler(payload) { 
+function pieceHandler(payload, socket, requested, queue) { 
   //...
+  queue.shift();
+  requestPiece(socket, requested, queue);
+
  }
+
+function requestPiece(socket, requested, queue) {
+  if (requested[queue[0]]) {
+    queue.shift();
+  } else {
+    // this is pseudo-code, as buildRequest actually takes slightly more
+    // complex arguments
+    socket.write(message.buildRequest(pieceIndex));
+  }
+}
