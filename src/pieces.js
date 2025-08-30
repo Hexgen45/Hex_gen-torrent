@@ -1,6 +1,6 @@
 'use strict';
 
-export class Pieces {
+export default class Pieces {
   constructor(size) {
     this.requested = new Array(size).fill(false);
     this.received = new Array(size).fill(false);
