@@ -3,11 +3,12 @@ import net from 'net'
 import { getPeers } from './src/tracker.js';
 import {buildHandshake, msg_parse, buildRequest, buildInterested, msg_parse} from './message.js'
 import Pieces from './pieces.js';
+import Queue from './Queue.js';
 
 
 getPeers(torrent, peers => {
-    const pieces = new Pieces(torrent.info.pieces.length / 20);
-    peers.foreach(peer => Download(peer, torrent, requested));
+    const pieces = new Pieces(torrent);
+    peers.foreach(peer => Download(peer, torrent, pieces));
 })
 
 function Download(peer, torrent, pieces){
@@ -17,7 +18,7 @@ function Download(peer, torrent, pieces){
         socket.write(buildHandshake(torrent));
     });
 
-    const queue = {choked: true, queue: []};
+    const queue = new Queue(torrent);
     onWholeMsg(socket, msg => msgHandler(msg, socket, pieces, queue));
     
 }
@@ -94,12 +95,12 @@ function pieceHandler(payload, socket, requested, queue) {
 function requestPiece(socket, pieces, queue) {
   if (queue.choked) return null;
 
-  while (queue.queue.length){
-    const pieceIndex = queue.shift();
-    if (pieces.needed(pieceIndex)) {
+  while (queue.length()){
+    const pieceBlock = queue.deque();
+    if (pieces.needed(pieceBlock)) {
 
-      socket.write(buildRequest(pieceIndex));
-      pieces.addRequested(pieceIndex);
+      socket.write(buildRequest(pieceBlock));
+      pieces.addRequested(pieceBlock);
       break;
     }
   }

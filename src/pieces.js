@@ -1,28 +1,42 @@
 'use strict';
 
-export default class Pieces {
-  constructor(size) {
-    this.requested = new Array(size).fill(false);
-    this.received = new Array(size).fill(false);
+import { blocksPerPiece, BLOCK_LEN } from './torrent-Parser.js';
+
+export default class PieceTracker {
+  constructor(torrent) {
+    const buildPiecesArray = () => {
+      const nPieces = torrent.info.pieces.length / 20; // each SHA1 hash = 20 bytes
+      const arr = new Array(nPieces).fill(null);
+      return arr.map((_, i) =>
+        new Array(blocksPerPiece(torrent, i)).fill(false)
+      );
+    };
+
+    this._requested = buildPiecesArray();
+    this._received = buildPiecesArray();
   }
 
-  addRequested(pieceIndex) {
-    this.requested[pieceIndex] = true;
+  addRequested(pieceBlock) {
+    const blockIndex = pieceBlock.begin / BLOCK_LEN;
+    this._requested[pieceBlock.index][blockIndex] = true;
   }
 
-  addReceived(pieceIndex) {
-    this.received[pieceIndex] = true;
+  addReceived(pieceBlock) {
+    const blockIndex = pieceBlock.begin / BLOCK_LEN;
+    this._received[pieceBlock.index][blockIndex] = true;
   }
 
-  needed(pieceIndex) {
-    if (this.requested.every(i => i === true)) {
-      // use slice method to return a copy of an array
-      this.requested = this.received.slice();
+  needed(pieceBlock) {
+    // If ALL blocks have been requested at least once,
+    // reset requested state = received state (start new cycle for missing ones)
+    if (this._requested.every(blocks => blocks.every(i => i))) {
+      this._requested = this._received.map(blocks => blocks.slice());
     }
-    return !this.requested[pieceIndex];
+    const blockIndex = pieceBlock.begin / BLOCK_LEN;
+    return !this._requested[pieceBlock.index][blockIndex];
   }
 
   isDone() {
-    return this.received.every(i => i === true);
+    return this._received.every(blocks => blocks.every(i => i));
   }
-};
+}
