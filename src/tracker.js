@@ -48,6 +48,8 @@ export function getPeers (torrent, callback) {
             clearTimeout(timeout);
             const announceResp = parseAnnounceResp(response);
 
+            socket.close();  // done with the tracker; close so the process can exit later
+
             callback(announceResp.peers)
         }
     });

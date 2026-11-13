@@ -36,6 +36,16 @@ export default class PieceTracker {
     return !this._requested[pieceBlock.index][blockIndex];
   }
 
+  isPieceComplete(pieceIndex) {
+    return this._received[pieceIndex].every(i => i);
+  }
+
+  // Clear a piece so its blocks get requested and received again (e.g. it failed verification)
+  resetPiece(pieceIndex) {
+    this._received[pieceIndex].fill(false);
+    this._requested[pieceIndex].fill(false);
+  }
+
   isDone() {
     return this._received.every(blocks => blocks.every(i => i));
   }

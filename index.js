@@ -79,12 +79,8 @@ async function main() {
     process.exit(1);
   }
 
-  if (torrent.info.files) {
-    console.log('Note: this is a multi-file torrent — only single-file downloads are supported right now.');
-  }
-
   console.log(`Starting download of "${torrent.info.name}" ...`);
-  startDownloading(torrent, torrent.info.name);
+  startDownloading(torrent);
 }
 
 main();
