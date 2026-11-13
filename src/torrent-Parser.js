@@ -5,7 +5,15 @@ import bencode from 'bencode'
 import crypto from 'crypto';
 
 export function open (filePath) {
-    return bencode.decode(fs.readFileSync(filePath), 'utf-8');
+    // Decode binary so binary fields like `info.pieces` are not corrupted.
+    // bencode v4 returns Uint8Array (not Buffer) for binary values, so the
+    // string fields are converted explicitly below.
+    const torrent = bencode.decode(fs.readFileSync(filePath));
+
+    torrent.announce = Buffer.from(torrent.announce).toString('utf-8');
+    torrent.info.name = Buffer.from(torrent.info.name).toString('utf-8');
+
+    return torrent;
 };
 
 export function size (torrent) {

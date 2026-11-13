@@ -10,20 +10,42 @@ import {size, infoHash} from './torrent-Parser.js'
 export function getPeers (torrent, callback) {
     const socket = dgram.createSocket('udp4')
     const url = torrent["announce"]
-    
+
+    const fail = (reason) => {
+        console.error(`Tracker error (${url}): ${reason}`);
+        try { socket.close(); } catch (_) {}
+        callback([]);
+    };
+
+    socket.on('error', (err) => fail(err.message));
+
+    let timedOut = false;
+    let timeout;
+    const resetTimeout = () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            timedOut = true;
+            fail('no response (timeout)');
+        }, 15000);
+    };
+    resetTimeout();
 
     udpSend(socket, buildConnReq(), url);
 
     socket.on('message', (response)=>{
-      
+
+      if (timedOut) return;
+
       if (respType(response) === 'connect'){
             const connResp = parseConnResp(response)
-            
+
             const announceReq = buildAnnounceReq(connResp.connectionId, torrent);
-            
+
+            resetTimeout();
             udpSend(socket, announceReq, url);
         }
         else if (respType(response) === 'announce') {
+            clearTimeout(timeout);
             const announceResp = parseAnnounceResp(response);
 
             callback(announceResp.peers)
